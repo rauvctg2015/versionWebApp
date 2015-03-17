@@ -11,7 +11,6 @@ namespace testJuniorDev
     {
         FileContent f = new FileContent();
         List<string> array = new List<string>();
-        string resulString = "1,6,11" + Environment.NewLine + Environment.NewLine + "2,7,12" + Environment.NewLine + Environment.NewLine + "3,8,13" + Environment.NewLine + Environment.NewLine + "4,9,14";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -42,19 +41,64 @@ namespace testJuniorDev
                 byte[] content = this.FileUpload1.FileBytes;
                 
                 f.Content = System.Text.Encoding.UTF8.GetString(content);
-                array.Add(f.Content);
+                string[,] numbers = new string[f.Content.Length, f.Content.Length];
+
+                for (int i = 0; i < f.Content.Length; i++)
+                {
+                    if (f.Content[i].ToString() != ",")
+                    {
+                        int intvariable;
+                        if (Int32.TryParse(f.Content[i].ToString(), out intvariable) && i + 1 < f.Content.Length)
+                        {
+                            if (Int32.TryParse(f.Content[i + 1].ToString(), out intvariable))
+                            {
+                                array.Add(f.Content[i].ToString() + f.Content[i + 1].ToString());
+                                i = i + 1;
+                            }
+                            else
+                            {
+                                array.Add(f.Content[i].ToString());
+                            }  
+                        }
+                    }
+                    
+                }
+
+                List<string> arrayFiltrado = new List<string>();
+                foreach (var item in array)
+                {
+                    if (Convert.ToInt32(item) % 5 != 0)
+                    {
+                        arrayFiltrado.Add(item);
+                    }
+                }
 
                 if (array.Count >= 1)
                 {
-                    this.txtContent.Text = array.FirstOrDefault();
+
+                    foreach (var item in arrayFiltrado)
+                    {
+                       int intVariable;
+                       if (Int32.TryParse(item, out intVariable))
+                       {
+
+                            int firstNumber, secondNumber;
+                            firstNumber = intVariable +5;
+                            secondNumber = intVariable + 10;
+                            if (this.txtContent.Text.Contains(item.Last()))
+                            {
+                                break;
+                            }
+                            if(Convert.ToInt32(item) < firstNumber && Convert.ToInt32(item) < secondNumber)
+                            {
+                                this.txtContent.Text += intVariable + ", " + (intVariable + 5) + ", " + (intVariable + 10); this.txtContent.Text += "\n\r";
+                            }
+                       }
+                         
+                    }
+
                     string fileName = System.IO.Path.GetFileName(FileUpload1.PostedFile.FileName);
                     string dirUpload = Server.MapPath("~/Uploads/");
-
-                    FileUpload1.PostedFile.SaveAs(dirUpload + fileName);
-                    System.IO.File.WriteAllText(dirUpload + fileName, string.Empty);
-                    System.IO.File.WriteAllText(dirUpload + fileName, resulString);
-                    string content2 = System.IO.File.ReadAllText(dirUpload + fileName);
-                    this.txtContent.Text = content2;
                     ScriptManager.RegisterStartupScript(this.Page, Page.GetType(), "OpenDialog", "javascript:openDialog();", true);                 
                 }
                 else
@@ -64,6 +108,7 @@ namespace testJuniorDev
                 }
                 
             }
+
             catch (Exception ex)
             {
                 throw ex;
